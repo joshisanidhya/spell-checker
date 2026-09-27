@@ -1,0 +1,28 @@
+# Java compiled files
+*.class
+*.jar
+
+# Java build output
+backend/bin/
+backend/out/
+backend/target/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+frontend/dist/
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+*.log                                                                                                                               

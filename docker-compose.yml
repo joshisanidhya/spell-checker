@@ -1,0 +1,10 @@
+services:
+  backend:
+    build: ./backend
+    ports: ["8080:8080"]
+    environment:
+      DATASET_PATH: /app/data/hindi_10k.txt
+  frontend:
+    build: ./frontend
+    ports: ["3000:3000"]
+    depends_on: [backend]

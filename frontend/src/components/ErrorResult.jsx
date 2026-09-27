@@ -1,0 +1,6 @@
+import SuggestionCard from './SuggestionCard';
+
+export default function ErrorResult({ result }) {
+  if (!result.errors.length) return <section className="result success"><span className="result-icon">✓</span><div><h2>No spelling errors detected</h2><p>All words were found in the Hindi corpus vocabulary.</p></div></section>;
+  return <section className="results"><div className="results-summary"><div><span className="eyebrow">Analysis complete</span><h2>{result.errors.length} possible {result.errors.length === 1 ? 'error' : 'errors'} detected</h2></div><span className="time">{result.processingTimeMs} ms</span></div>{result.errors.map((error) => <div className="error-group" key={`${error.word}-${error.position}`}><div className="error-title"><strong>{error.word}</strong><span>word position {error.position + 1}</span></div>{error.suggestions.length ? error.suggestions.map((suggestion, index) => <SuggestionCard key={suggestion.word} suggestion={suggestion} index={index} />) : <p className="no-suggestions">No candidates within two edits.</p>}</div>)}<p className="explanation">ShuddhAI combines spelling similarity and corpus frequency to rank possible corrections.</p></section>;
+}
