@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ShuddhAI - Hindi Spell Checker</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <div class="logo">शु</div>
+
+            <div>
+                <h1>ShuddhAI</h1>
+                <p>Hindi Spelling Suggestion System</p>
+            </div>
+        </header>
+
+        <main>
+
+            <section class="card">
+
+                <h2>Check Hindi Spelling</h2>
+
+                <p class="description">
+                    Enter a Hindi word and get the
+                    top 5 closest suggestions.
+                </p>
+
+                <input
+                    id="wordInput"
+                    type="text"
+                    placeholder="उदाहरण: हिनदि"
+                    autocomplete="off"
+                    aria-label="Hindi word"
+                >
+
+                <h3 class="keyboard-title">Hindi Virtual Keyboard</h3>
+                <div id="keyboard" class="keyboard" aria-label="Hindi virtual keyboard"></div>
+
+                <button id="checkButton" type="button">
+                    Check Spelling
+                </button>
+
+                <div id="message"></div>
+
+            </section>
+
+            <section
+                id="resultCard"
+                class="card result-card hidden"
+            >
+
+                <h2>Result</h2>
+
+                <div id="result"></div>
+
+            </section>
+
+        </main>
+
+        <footer>
+            <p>
+                ShuddhAI • Hindi Spell Checker
+            </p>
+
+            <p>
+                Based on Levenshtein Edit Distance
+            </p>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

@@ -1,76 +1,51 @@
 # ShuddhAI
 
-ShuddhAI is a simple Hindi spelling suggestion system that suggests the top 5 closest words for a potentially misspelled Hindi word using a Hindi text corpus and Levenshtein edit distance.
+ShuddhAI is a simple Hindi spelling suggestion system. Enter a Hindi word to check it against a corpus vocabulary and, if it is unknown, receive up to five close suggestions.
+
+The project uses a small Java backend and a plain HTML, CSS, and JavaScript frontend. It does not use external libraries.
 
 ## Features
 
 - Hindi Unicode text support with NFC normalization
-- Vocabulary generation and word-frequency counting from a Hindi corpus
-- Detection of words that are not in the vocabulary
-- Levenshtein edit-distance suggestions measured over Unicode code points
-- Up to five suggestions, ranked by edit distance and then corpus frequency
-- Interactive command-line interface with an `exit` command
+- Vocabulary and word frequencies built from a Hindi corpus
+- A clickable Devanagari keyboard, plus support for physical keyboards
+- Unknown-word detection
+- Up to five suggestions ranked by Levenshtein distance, then corpus frequency
+- A minimum input length of three Unicode code points
 
 ## How It Works
 
 ```text
-Hindi Corpus
-     ↓
-Text Preprocessing
-     ↓
-Tokenization
-     ↓
-Vocabulary + Word Frequency
-     ↓
-User enters Hindi word
-     ↓
-Check whether word exists
-     ↓
-Calculate Levenshtein Distance
-     ↓
-Rank candidate words
-     ↓
+Browser
+   ↓
+HTML/CSS/JavaScript
+   ↓
+POST /check
+   ↓
+Java HttpServer
+   ↓
+Vocabulary
+   ↓
+Levenshtein Distance
+   ↓
 Top 5 Suggestions
+   ↓
+JSON response
+   ↓
+Browser
 ```
 
-Levenshtein distance counts the character edits needed to change one word into another: insertions, deletions, and substitutions. This implementation compares Unicode code points, so Devanagari characters are handled correctly. A smaller distance means the candidate is closer to the entered word. When distances tie, the word that occurs more often in the corpus is ranked first.
+The backend reads and tokenizes the corpus, then counts each word. Tokens with fewer than three Unicode code points are excluded. When a word is submitted, the backend checks vocabulary membership directly. If the word is unknown, it calculates its Levenshtein distance to vocabulary words and ranks all candidates by smallest distance. More frequent words come first when distances tie. The ranking has no distance cutoff, so it returns five suggestions whenever at least five vocabulary words are available.
 
-## Example
+Levenshtein distance is the minimum number of insertions, deletions, and substitutions needed to change one word into another. A lower distance means a closer spelling.
 
-Example from running the program with `भारत`, `हिनदि`, and `exit`:
+## Hindi Virtual Keyboard
 
-```text
-================================
-       ShuddhAI Spell Checker
-================================
-
-Enter a Hindi word (or 'exit'): The word is correct.
-
-Enter a Hindi word (or 'exit'): 
-Word not found.
-
-Top 5 suggestions:
-1. हिंदी
-2. हिंदू
-3. हिन्दी
-4. हानि
-5. हिन्दू
-
-Enter a Hindi word (or 'exit'):
-```
-
-Suggestions depend on the corpus and may differ if its contents change.
+The keyboard provides common Devanagari vowels, consonants, vowel signs, and marks, along with Space, Backspace, and Clear. Clicking a character inserts it at the current cursor or selection in the input. The physical keyboard works as usual.
 
 ## Dataset
 
-The program reads `backend/data/hindi_10k.txt` as UTF-8, tokenizes its text, and counts how often each word occurs. These words and frequencies form the vocabulary used for checking and ranking suggestions.
-
-## Technology
-
-- Java
-- Java Collections Framework
-- UTF-8 and Unicode NFC normalization
-- Dynamic programming for Levenshtein distance
+The project uses the existing `backend/data/hindi_10k.txt` corpus as UTF-8 input. Corpus words and their frequencies determine which words can be suggested and how equal-distance suggestions are ordered.
 
 ## Project Structure
 
@@ -82,48 +57,59 @@ spell-checker/
 │   ├── 2025.coling-main.406.pdf
 │   ├── proposal.pdf
 │   └── report_context.pdf
-└── backend/
-    ├── data/
-    │   └── hindi_10k.txt
-    └── src/
-        ├── Main.java
-        ├── Tokenizer.java
-        ├── Vocabulary.java
-        ├── EditDistance.java
-        └── SpellChecker.java
+├── backend/
+│   ├── data/
+│   │   └── hindi_10k.txt
+│   └── src/
+│       ├── Main.java
+│       ├── Server.java
+│       ├── SpellChecker.java
+│       ├── Vocabulary.java
+│       ├── Tokenizer.java
+│       └── EditDistance.java
+└── frontend/
+    ├── index.html
+    ├── style.css
+    └── script.js
 ```
 
 ## Requirements
 
-Java 16 or later is required. The project uses only standard Java APIs and has no external library dependencies.
+Java 11 or later with the `jdk.httpserver` module. The frontend uses standard browser HTML, CSS, and JavaScript and needs no package installation.
 
-## Setup and Usage
+## Run Locally
 
-From the repository root, compile and run:
+From the repository root, compile the Java backend:
 
 ```bash
-javac -encoding UTF-8 -d backend/out backend/src/*.java
-java -cp backend/out Main
+javac --add-modules jdk.httpserver -encoding UTF-8 backend/src/*.java
 ```
 
-The corpus path is relative to the repository root, so run the commands there. Enter one Hindi word at a time. The program checks the first token entered. If it is in the vocabulary, it prints `The word is correct.` Otherwise, it displays up to five suggestions. Type `exit` to quit.
+Start the backend from the repository root so it can find the corpus:
 
-## Algorithm
+```bash
+java --add-modules jdk.httpserver -cp backend/src Main
+```
 
-1. Read the corpus as UTF-8 text.
-2. Normalize text to NFC, retain Devanagari characters, and split it into words.
-3. Count each word to build the vocabulary and its frequencies.
-4. Normalize and check the user's first input token against the vocabulary.
-5. For an unknown word, calculate its Levenshtein distance to each vocabulary word.
-6. Sort by smallest distance, then highest corpus frequency, and display up to five words.
+Keep the backend terminal running. Open `frontend/index.html` in a browser to use the app. Stop the backend with Ctrl+C.
+
+## Use the API
+
+The backend accepts `POST /check` at `http://localhost:8080/check` with a JSON body:
+
+```json
+{"word":"हिनदि"}
+```
+
+An unknown word returns `correct: false` and up to five vocabulary suggestions. A known word returns `correct: true`. Inputs shorter than three code points receive an error message.
 
 ## Limitations
 
-- Suggestions are limited to words present in the corpus.
-- The comparison is character-based; it does not use word meaning or sentence context.
+- Suggestions can only come from words in the corpus.
+- The checker compares spellings character by character; it does not use meaning or sentence context.
 - Suggestion quality depends on the corpus.
-- This is a basic spelling suggestion tool, not a grammar checker.
+- This is a basic spelling suggestion system, not a grammar checker.
 
 ## Future Improvements
 
-Possible future work includes using a larger corpus, adding context-aware or phonetic suggestions, exploring Hindi morphology, and supporting other Indian languages or a web interface.
+Possible future work includes adding a larger corpus, context-aware or phonetic suggestions, Hindi morphological analysis, or support for other Indian languages.

@@ -2,27 +2,54 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-/** Word frequencies counted from the Hindi corpus. */
-public final class Vocabulary {
-    private final Map<String, Integer> frequencies;
+public class Vocabulary {
 
-    public Vocabulary(Map<String, Integer> frequencies) {
-        this.frequencies = Map.copyOf(frequencies);
-    }
+    private final Map<String, Integer> frequencies =
+            new HashMap<>();
 
-    public static Vocabulary fromFile(Path path) throws IOException {
-        Map<String, Integer> counts = new LinkedHashMap<>();
-        try (var lines = Files.lines(path, StandardCharsets.UTF_8)) {
-            lines.flatMap(line -> Tokenizer.tokenize(line).stream())
-                    .forEach(word -> counts.merge(word, 1, Integer::sum));
+    public void load(Path filePath) throws IOException {
+
+        List<String> lines = Files.readAllLines(
+                filePath,
+                StandardCharsets.UTF_8
+        );
+
+        for (String line : lines) {
+
+            List<String> words =
+                    Tokenizer.tokenize(line);
+
+            for (String word : words) {
+
+                if (word.codePointCount(0, word.length()) < 3) {
+                    continue;
+                }
+
+                frequencies.put(
+                        word,
+                        frequencies.getOrDefault(word, 0) + 1
+                );
+            }
         }
-        return new Vocabulary(counts);
     }
 
-    public boolean contains(String word) { return frequencies.containsKey(word); }
-    public int frequency(String word) { return frequencies.getOrDefault(word, 0); }
-    public Map<String, Integer> frequencies() { return frequencies; }
+    public boolean contains(String word) {
+        return frequencies.containsKey(word);
+    }
+
+    public int getFrequency(String word) {
+        return frequencies.getOrDefault(word, 0);
+    }
+
+    public Map<String, Integer> getWords() {
+        return frequencies;
+    }
+
+    public int size() {
+        return frequencies.size();
+    }
 }

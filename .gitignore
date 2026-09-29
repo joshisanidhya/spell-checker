@@ -1,18 +1,8 @@
-
 *.class
-*.jar
-
-
-backend/out/
-
 
 .vscode/
 .idea/
-*.iml
-
 
 .DS_Store
-Thumbs.db
-
 
 *.log
