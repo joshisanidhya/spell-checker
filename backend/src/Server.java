@@ -24,7 +24,7 @@ public class Server {
                 0
         );
 
-        // A single root handler routes exact paths; static files are allow-listed below.
+        
         server.createContext("/", this::route);
         server.setExecutor(null);
         server.start();
