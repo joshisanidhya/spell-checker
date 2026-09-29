@@ -1,3 +1,0 @@
-export default function SuggestionCard({ suggestion, index }) {
-  return <article className="suggestion"><div className="suggestion-head"><span className="rank">#{index + 1}</span><strong>{suggestion.word}</strong><b>{suggestion.finalScore.toFixed(3)}</b></div><div className="metrics"><span>Edit distance <b>{suggestion.editDistance}</b></span><span>Edit similarity <b>{suggestion.editSimilarity.toFixed(3)}</b></span><span>Frequency <b>{suggestion.frequency.toLocaleString('en-IN')}</b></span><span>Frequency score <b>{suggestion.frequencyScore.toFixed(3)}</b></span></div></article>;
-}
