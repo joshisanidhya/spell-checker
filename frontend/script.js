@@ -1,22 +1,32 @@
 const input = document.getElementById("wordInput");
 const button = document.getElementById("checkButton");
+const buttonLabel = button.querySelector(".check-label");
 const message = document.getElementById("message");
 
 const resultCard = document.getElementById("resultCard");
 const result = document.getElementById("result");
 const keyboard = document.getElementById("keyboard");
+const characterCount = document.getElementById("characterCount");
+const clearInput = document.getElementById("clearInput");
 
 const keyRows = [
-    ["अ", "आ", "इ", "ई", "उ", "ऊ", "ए", "ऐ", "ओ", "औ", "अं", "अः"],
-    ["क", "ख", "ग", "घ", "ङ", "च", "छ", "ज", "झ", "ञ"],
-    ["ट", "ठ", "ड", "ढ", "ण", "त", "थ", "द", "ध", "न"],
-    ["प", "फ", "ब", "भ", "म", "य", "र", "ल", "व"],
-    ["श", "ष", "स", "ह"],
-    ["ा", "ि", "ी", "ु", "ू", "े", "ै", "ो", "ौ"],
-    ["ं", "ः", "्"]
+    ["Vowels", ["अ", "आ", "इ", "ई", "उ", "ऊ", "ए", "ऐ", "ओ", "औ", "अं", "अः"]],
+    ["Consonants", ["क", "ख", "ग", "घ", "ङ", "च", "छ", "ज", "झ", "ञ"]],
+    ["", ["ट", "ठ", "ड", "ढ", "ण", "त", "थ", "द", "ध", "न"]],
+    ["", ["प", "फ", "ब", "भ", "म", "य", "र", "ल", "व"]],
+    ["", ["श", "ष", "स", "ह"]],
+    ["Matras & Signs", ["ा", "ि", "ी", "ु", "ू", "े", "ै", "ो", "ौ", "ं", "ः", "्"]]
 ];
 
-for (const rowKeys of keyRows) {
+for (const [label, rowKeys] of keyRows) {
+    const group = document.createElement("div");
+    group.className = "keyboard-group";
+    if (label) {
+        const groupLabel = document.createElement("span");
+        groupLabel.className = "keyboard-group-label";
+        groupLabel.textContent = label;
+        group.appendChild(groupLabel);
+    }
     const row = document.createElement("div");
     row.className = "keyboard-row";
     for (const character of rowKeys) {
@@ -28,7 +38,8 @@ for (const rowKeys of keyRows) {
         key.addEventListener("click", () => insertAtCursor(character));
         row.appendChild(key);
     }
-    keyboard.appendChild(row);
+    group.appendChild(row);
+    keyboard.appendChild(group);
 }
 
 const actionRow = document.createElement("div");
@@ -46,6 +57,20 @@ actionRow.className = "keyboard-row keyboard-actions";
     actionRow.appendChild(key);
 });
 keyboard.appendChild(actionRow);
+
+function updateCharacterCount() {
+    const count = Array.from(input.value).length;
+    characterCount.textContent = `${count} ${count === 1 ? "character" : "characters"}`;
+}
+
+input.addEventListener("input", updateCharacterCount);
+clearInput.addEventListener("click", () => {
+    input.value = "";
+    input.focus();
+    updateCharacterCount();
+    message.textContent = "";
+});
+updateCharacterCount();
 
 function insertAtCursor(text) {
     const start = input.selectionStart ?? input.value.length;
@@ -113,12 +138,12 @@ async function checkSpelling() {
 
     button.disabled = true;
 
-    button.textContent = "Checking...";
+    buttonLabel.textContent = "Checking...";
 
     try {
 
         const response = await fetch(
-            "http://localhost:8080/check",
+            "/check",
             {
                 method: "POST",
 
@@ -156,7 +181,7 @@ async function checkSpelling() {
 
         button.disabled = false;
 
-        button.textContent = "Check Spelling";
+        buttonLabel.textContent = "Check Spelling";
     }
 }
 
@@ -171,10 +196,19 @@ function displayResult(data) {
         const correctBox =
             document.createElement("div");
 
-        correctBox.className = "correct";
-
-        correctBox.textContent =
-            "✓ यह शब्द सही है — " + data.word;
+        correctBox.className = "result-banner success-banner";
+        correctBox.innerHTML = "<span class=\"status-symbol\" aria-hidden=\"true\">✓</span>";
+        const copy = document.createElement("div");
+        copy.className = "status-copy";
+        const title = document.createElement("h3");
+        title.textContent = "Correct word";
+        const word = document.createElement("span");
+        word.className = "result-word";
+        word.textContent = data.word;
+        const detail = document.createElement("p");
+        detail.textContent = "This word exists in the vocabulary.";
+        copy.append(title, word, detail);
+        correctBox.appendChild(copy);
 
         result.appendChild(correctBox);
 
@@ -184,10 +218,17 @@ function displayResult(data) {
     const notFound =
         document.createElement("div");
 
-    notFound.className = "not-found";
-
-    notFound.textContent =
-        "Word not found: " + data.word;
+    notFound.className = "result-banner warning-banner";
+    notFound.innerHTML = "<span class=\"status-symbol\" aria-hidden=\"true\">!</span>";
+    const notFoundCopy = document.createElement("div");
+    notFoundCopy.className = "status-copy";
+    const notFoundTitle = document.createElement("h3");
+    notFoundTitle.textContent = "Word not found";
+    const unknownWord = document.createElement("span");
+    unknownWord.className = "result-word";
+    unknownWord.textContent = data.word;
+    notFoundCopy.append(notFoundTitle, unknownWord);
+    notFound.appendChild(notFoundCopy);
 
     result.appendChild(notFound);
 
@@ -199,8 +240,7 @@ function displayResult(data) {
         const noSuggestions =
             document.createElement("div");
 
-        noSuggestions.className =
-            "no-suggestions";
+        noSuggestions.className = "no-suggestions";
 
         noSuggestions.textContent =
             "No close suggestions found.";
@@ -213,10 +253,8 @@ function displayResult(data) {
     const title =
         document.createElement("h3");
 
-    title.textContent =
-        "Top 5 Suggestions";
-
-    title.style.marginBottom = "12px";
+    title.className = "suggestions-heading";
+    title.innerHTML = "<h3>Closest suggestions</h3><span>Ranked by similarity</span>";
 
     result.appendChild(title);
 
@@ -237,17 +275,23 @@ function displayResult(data) {
             number.className = "number";
 
             number.textContent =
-                index + 1;
+                String(index + 1).padStart(2, "0");
 
             const word =
                 document.createElement("span");
 
-            word.textContent =
-                suggestion;
+            word.className = "suggestion-word";
+            word.textContent = suggestion;
+
+            const arrow = document.createElement("span");
+            arrow.className = "suggestion-arrow";
+            arrow.setAttribute("aria-hidden", "true");
+            arrow.textContent = "→";
 
             item.appendChild(number);
 
             item.appendChild(word);
+            item.appendChild(arrow);
 
             list.appendChild(item);
         }

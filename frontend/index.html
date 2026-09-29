@@ -1,89 +1,105 @@
 <!DOCTYPE html>
 <html lang="hi">
-
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>ShuddhAI - Hindi Spell Checker</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f6f7fb">
+    <title>ShuddhAI — Hindi Spell Intelligence</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <div class="container">
-
-        <header>
-            <div class="logo">शु</div>
-
-            <div>
-                <h1>ShuddhAI</h1>
-                <p>Hindi Spelling Suggestion System</p>
-            </div>
+    <div class="page-shell">
+        <header class="site-header">
+            <a class="brand" href="#top" aria-label="ShuddhAI home">
+                <span class="brand-mark" aria-hidden="true">◈</span>
+                <span class="brand-copy">
+                    <strong>ShuddhAI</strong>
+                    <small>Hindi Spell Intelligence</small>
+                </span>
+            </a>
+            <span class="top-badge"><span class="badge-dot"></span> HINDI NLP</span>
         </header>
 
-        <main>
+        <main id="top">
+            <section class="hero" aria-labelledby="hero-title">
+                <span class="eyebrow">A thoughtful Hindi writing companion</span>
+                <h1 id="hero-title">Write it naturally.<br><span>We’ll help you find the right word.</span></h1>
+                <p>Type or select Hindi characters to discover the closest spelling suggestions.</p>
+            </section>
 
-            <section class="card">
+            <section class="checker-card" aria-labelledby="checker-title">
+                <div class="card-heading">
+                    <div>
+                        <span class="section-index">01 / SPELL CHECK</span>
+                        <h2 id="checker-title">Check your Hindi spelling</h2>
+                        <p>Enter a word and we’ll find the closest matches.</p>
+                    </div>
+                    <span class="heading-icon" aria-hidden="true">अ</span>
+                </div>
 
-                <h2>Check Hindi Spelling</h2>
+                <label class="input-label" for="wordInput">Hindi word</label>
+                <div class="input-wrap">
+                    <input id="wordInput" type="text" placeholder="यहाँ हिंदी शब्द लिखें…" autocomplete="off" aria-label="Hindi word">
+                    <button id="clearInput" class="input-clear" type="button" aria-label="Clear input" title="Clear input">×</button>
+                </div>
+                <div class="input-meta">
+                    <span id="characterCount" aria-live="polite">0 characters</span>
+                    <span class="input-hint">Press Enter to check</span>
+                </div>
 
-                <p class="description">
-                    Enter a Hindi word and get the
-                    top 5 closest suggestions.
-                </p>
-
-                <input
-                    id="wordInput"
-                    type="text"
-                    placeholder="उदाहरण: हिनदि"
-                    autocomplete="off"
-                    aria-label="Hindi word"
-                >
-
-                <h3 class="keyboard-title">Hindi Virtual Keyboard</h3>
+                <div class="keyboard-heading">
+                    <div>
+                        <h3>Virtual Hindi Keyboard</h3>
+                        <p>Click characters to type</p>
+                    </div>
+                    <span class="keyboard-language">देवनागरी</span>
+                </div>
                 <div id="keyboard" class="keyboard" aria-label="Hindi virtual keyboard"></div>
 
-                <button id="checkButton" type="button">
-                    Check Spelling
+                <button id="checkButton" class="check-button" type="button">
+                    <span class="check-button-icon" aria-hidden="true">✦</span>
+                    <span class="check-label">Check Spelling</span>
+                    <span class="button-arrow" aria-hidden="true">→</span>
                 </button>
-
-                <div id="message"></div>
-
+                <div id="message" class="message" role="status" aria-live="polite"></div>
             </section>
 
-            <section
-                id="resultCard"
-                class="card result-card hidden"
-            >
-
-                <h2>Result</h2>
-
+            <section id="resultCard" class="result-card hidden" aria-live="polite">
+                <div class="result-topline"><span class="section-index">02 / RESULT</span><span class="result-rule"></span></div>
                 <div id="result"></div>
-
             </section>
 
+            <section class="explain-section" aria-labelledby="explain-title">
+                <div class="explain-heading">
+                    <span class="section-index">THE METHOD</span>
+                    <h2 id="explain-title">How ShuddhAI works</h2>
+                    <p>A simple, explainable approach to spelling suggestions.</p>
+                </div>
+                <div class="steps-grid">
+                    <article class="step-card">
+                        <span class="step-number">01</span>
+                        <h3>Vocabulary</h3>
+                        <p>The system builds a Hindi vocabulary from the corpus.</p>
+                    </article>
+                    <article class="step-card">
+                        <span class="step-number">02</span>
+                        <h3>Similarity</h3>
+                        <p>Levenshtein distance compares the word with vocabulary entries.</p>
+                    </article>
+                    <article class="step-card">
+                        <span class="step-number">03</span>
+                        <h3>Suggestions</h3>
+                        <p>The five closest words are shown as spelling suggestions.</p>
+                    </article>
+                </div>
+            </section>
         </main>
 
-        <footer>
-            <p>
-                ShuddhAI • Hindi Spell Checker
-            </p>
-
-            <p>
-                Based on Levenshtein Edit Distance
-            </p>
+        <footer class="site-footer">
+            <div class="footer-brand"><span class="brand-mark" aria-hidden="true">◈</span><strong>ShuddhAI</strong><span>Hindi Spelling Suggestion System</span></div>
+            <p>Built using Java <span>•</span> Levenshtein Distance <span>•</span> Hindi Corpus</p>
         </footer>
-
     </div>
-
     <script src="script.js"></script>
-
 </body>
-
 </html>
