@@ -1,24 +1,36 @@
 # ShuddhAI
 
-ShuddhAI is a Hindi spelling suggestion system. You type a Hindi word, and it tells you whether the spelling is correct. If not, it shows up to 5 close suggestions based on the words in its Hindi corpus.
+ShuddhAI is a Hindi spelling suggestion system. We type a Hindi word, and it tells us whether the spelling is correct. If not, it shows up to 5 close suggestions based on the words in its Hindi corpus.
 
 ## Features
 
 - Hindi spelling checking
-- Top 5 spelling suggestions
+- Up to 5 spelling suggestions
 - Levenshtein edit distance for finding similar words
-- Hindi corpus (`hindi_10k.txt`) as the word source
+- Hindi corpus as the vocabulary source
 - Word frequency used to rank suggestions
-- Hindi virtual keyboard (Devanagari) in the browser
-- Simple web interface served directly from the Java backend
+- Hindi virtual keyboard (Devanagari)
+- Simple web interface served from the Java backend
 
 ## How It Works
 
-1. Hindi words are loaded from the corpus file on startup.
-2. A vocabulary is built from these words, along with each word's frequency.
-3. When you enter a word, it checks if the word exists in the vocabulary.
-4. If the word is not found, Levenshtein distance is calculated between your word and every word in the vocabulary.
-5. Candidates are sorted by distance first, then by frequency. The top 5 are shown as suggestions.
+1. Hindi sentences are loaded from the corpus when the application starts.
+2. A vocabulary is created from the words in the corpus along with their frequencies.
+3. The entered word is checked against the vocabulary.
+4. If the word is not found, Levenshtein edit distance is calculated between the input word and vocabulary words.
+5. The candidates are sorted by edit distance first and then by word frequency.
+6. The top 5 suggestions are shown to the user.
+
+## Dataset / Data Source
+
+The Hindi text data used in this project is taken from the **AI4Bharat IndicNLP Corpus**, developed by **AI4Bharat at IIT Madras**.
+
+A subset of **10,000 Hindi sentences** was extracted from the Hindi corpus and stored in:
+
+
+backend/data/hindi_10k.txt
+
+This subset is used to build the vocabulary and calculate word frequencies for the spelling suggestion system.
 
 ## Tech Stack
 
@@ -66,8 +78,6 @@ java --add-modules jdk.httpserver -cp backend/src Main
 
 Then open `http://localhost:8080` in your browser.
 
-> The `PORT` environment variable can be set to change the default port (8080).
-
 ## Docker
 
 ```bash
@@ -80,27 +90,6 @@ docker run -p 8080:10000 shuddhai
 
 Then open `http://localhost:8080`.
 
-## API
-
-**POST** `/check`
-
-Request body:
-```json
-{ "word": "हिंदी" }
-```
-
-Response:
-```json
-{
-  "word": "हिंदी",
-  "correct": true,
-  "suggestions": []
-}
-```
-
-If the word is not in the vocabulary, `correct` is `false` and `suggestions` contains up to 5 similar words.
-
-**GET** `/health` — returns `{"status":"ok"}` if the server is running.
 
 ## Limitations
 
@@ -118,4 +107,3 @@ If the word is not in the vocabulary, `correct` is `false` and `suggestions` con
 
 **Sanidhya Joshi**
 
-GitHub: https://github.com/joshisanidhya
