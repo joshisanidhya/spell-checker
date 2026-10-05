@@ -1,164 +1,121 @@
 # ShuddhAI
 
-ShuddhAI is a simple Hindi spelling suggestion system that uses a Hindi corpus, vocabulary, word frequency, and Levenshtein edit distance to suggest the top 5 closest words for a potentially misspelled Hindi word.
-
-## Overview
-
-The Java server loads the included Hindi corpus and builds a word-frequency vocabulary. The browser sends a word to the server. If that word is not in the vocabulary, the server ranks vocabulary words by edit distance and then frequency, and returns up to five suggestions. The interface is written in HTML, CSS, and vanilla JavaScript.
+ShuddhAI is a Hindi spelling suggestion system. You type a Hindi word, and it tells you whether the spelling is correct. If not, it shows up to 5 close suggestions based on the words in its Hindi corpus.
 
 ## Features
 
-- Hindi spelling checks with Unicode NFC normalization
-- Vocabulary and word frequencies built from the corpus
-- Up to five suggestions ranked by Levenshtein distance, then frequency
-- Clickable Hindi virtual keyboard, including vowels, consonants, matras, signs, Space, Backspace, and Clear
-- Character counter and correct-word or suggestion results
-- Java built-in `HttpServer` serves the frontend and spelling endpoint
-- `GET /health` health response
-- Dockerfile for running the frontend and backend in one container
-- Render-compatible `PORT` handling and `0.0.0.0` binding
-
-## Live Demo
-
-Live demo will be added after deployment.
+- Hindi spelling checking
+- Top 5 spelling suggestions
+- Levenshtein edit distance for finding similar words
+- Hindi corpus (`hindi_10k.txt`) as the word source
+- Word frequency used to rank suggestions
+- Hindi virtual keyboard (Devanagari) in the browser
+- Simple web interface served directly from the Java backend
 
 ## How It Works
 
-```text
-                User
-                  |
-                  v
-        HTML/CSS/JavaScript
-                  |
-                  | POST /check
-                  v
-          Java HTTP Server
-                  |
-                  v
-          Hindi Vocabulary  <--- backend/data/hindi_10k.txt
-                  |
-          +-------+-------+
-          |               |
-          v               v
-      Word Check     Edit Distance
-                          |
-                          v
-                  Candidate Ranking
-                          |
-                          v
-                  Top 5 Suggestions
-                          |
-                          v
-                    Frontend
-```
+1. Hindi words are loaded from the corpus file on startup.
+2. A vocabulary is built from these words, along with each word's frequency.
+3. When you enter a word, it checks if the word exists in the vocabulary.
+4. If the word is not found, Levenshtein distance is calculated between your word and every word in the vocabulary.
+5. Candidates are sorted by distance first, then by frequency. The top 5 are shown as suggestions.
 
-The server checks vocabulary membership directly. For an unknown word, it calculates Levenshtein distance against vocabulary words using Unicode code points. Levenshtein distance is the minimum number of character insertions, deletions, and substitutions needed to transform one word into another. Candidates are sorted by lowest distance; higher-frequency words come first when distances tie. There is no edit-distance cutoff, so the checker returns five suggestions whenever at least five vocabulary words are available.
+## Tech Stack
 
-Vocabulary tokens shorter than three Unicode code points are ignored, and input shorter than three code points is rejected.
-
-## Dataset
-
-The project uses the existing UTF-8 corpus at `backend/data/hindi_10k.txt`. The corpus is not replaced or downloaded at runtime. It provides both the vocabulary candidates and the word frequencies used to break ranking ties.
+| Layer      | Technology                      |
+|------------|---------------------------------|
+| Frontend   | HTML, CSS, JavaScript           |
+| Backend    | Java (jdk.httpserver)           |
+| Algorithm  | Levenshtein Edit Distance       |
+| Data       | Hindi corpus (`hindi_10k.txt`)  |
+| Deployment | Docker / Render                 |
 
 ## Project Structure
 
-```text
+```
 spell-checker/
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── README.md
-├── ResearchPaper/
 ├── backend/
 │   ├── data/
-│   │   └── hindi_10k.txt
+│   │   └── hindi_10k.txt       # Hindi corpus
 │   └── src/
-│       ├── Main.java
-│       ├── Server.java
-│       ├── SpellChecker.java
-│       ├── Vocabulary.java
-│       ├── Tokenizer.java
-│       └── EditDistance.java
-└── frontend/
-    ├── index.html
-    ├── style.css
-    └── script.js
+│       ├── Main.java           # Entry point
+│       ├── Server.java         # HTTP server and routing
+│       ├── SpellChecker.java   # Suggestion logic
+│       ├── EditDistance.java   # Levenshtein implementation
+│       ├── Vocabulary.java     # Vocabulary and frequency map
+│       └── Tokenizer.java      # Text cleaning
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+├── Dockerfile
+└── README.md
 ```
 
-## Requirements
+## Run Locally
 
-- Java 17 or later
-- Docker, if building or running the container
-
-The project uses standard Java APIs and has no external Java or frontend package dependencies.
-
-## Local Run
-
-Run these commands from the repository root. The server reads the corpus and frontend files using repository-relative paths.
-
-Compile:
+Make sure you have **Java 17+** installed.
 
 ```bash
-javac --add-modules jdk.httpserver -encoding UTF-8 backend/src/*.java
-```
+# Compile
+javac --add-modules jdk.httpserver -encoding UTF-8 backend/src/*.java -d backend/src
 
-Start the server:
-
-```bash
+# Run
 java --add-modules jdk.httpserver -cp backend/src Main
 ```
 
-Open <http://localhost:8080>. The server uses port `8080` by default and uses the `PORT` environment variable when set. Stop it with Ctrl+C.
+Then open `http://localhost:8080` in your browser.
 
-## Usage and Routes
-
-The page at `/` includes the Hindi input, virtual keyboard, spelling check button, and results. Enter a word and choose **Check Spelling** (or press Enter). Words in the vocabulary are reported as correct; unknown words receive up to five suggestions. Enter at least three Unicode code points. The virtual keyboard inserts characters at the cursor and also provides Space, Backspace, and Clear.
-
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/` | Serves the frontend page |
-| `GET` | `/style.css` | Serves frontend styles |
-| `GET` | `/script.js` | Serves frontend behavior |
-| `GET` | `/health` | Returns `{"status":"ok"}` |
-| `POST` | `/check` | Checks a word and returns JSON suggestions |
-
-Example request:
-
-```json
-{"word":"हिनदि"}
-```
-
-An unknown word returns `correct: false` and a `suggestions` array. A known word returns `correct: true` with an empty suggestions array. The frontend calls `/check` as a relative path, so local and deployed use the same origin.
+> The `PORT` environment variable can be set to change the default port (8080).
 
 ## Docker
 
-Build the image from the repository root:
-
 ```bash
+# Build the image
 docker build -t shuddhai .
+
+# Run the container
+docker run -p 8080:10000 shuddhai
 ```
 
-Run it locally on port 8080:
+Then open `http://localhost:8080`.
 
-```bash
-docker run --rm -p 8080:8080 -e PORT=8080 shuddhai
+## API
+
+**POST** `/check`
+
+Request body:
+```json
+{ "word": "हिंदी" }
 ```
 
-Then open <http://localhost:8080>. The image includes the Java sources and compiled classes, frontend files, and Hindi corpus.
+Response:
+```json
+{
+  "word": "हिंदी",
+  "correct": true,
+  "suggestions": []
+}
+```
 
-## Render Deployment
+If the word is not in the vocabulary, `correct` is `false` and `suggestions` contains up to 5 similar words.
 
-1. Push the project to GitHub.
-2. In Render, choose **New → Web Service** and connect the repository.
-3. Select **Docker** as the runtime, use the repository root, and set the Dockerfile path to `./Dockerfile`.
-4. Deploy. The Java process serves the frontend and API through the same Render web service.
-5. Open the generated `onrender.com` URL shown in Render.
-
-Render supplies the `PORT` environment variable at runtime. The server binds to `0.0.0.0` on that port; the local fallback is `8080`. Render documents these requirements in its [Web Services guide](https://render.com/docs/web-services) and [Docker guide](https://render.com/docs/docker).
+**GET** `/health` — returns `{"status":"ok"}` if the server is running.
 
 ## Limitations
 
-- Suggestions can only come from words in the included corpus.
-- The algorithm compares spellings character by character; it does not use word meaning or sentence context.
-- Suggestion quality depends on the corpus.
-- This is a spelling suggestion system, not a grammar checker.
+- Suggestions depend entirely on the corpus — if a valid word isn't in it, the system won't recognize it.
+- It only checks individual word spelling, not grammar or sentence meaning.
+- Edit distance works at the character level, so phonetically similar but visually different words may not rank well.
+
+## Future Improvements
+
+- Larger and more diverse Hindi corpus
+- Context-aware suggestions (sentence-level)
+- Support for more Indian languages
+
+## Author
+
+**Sanidhya Joshi**
+
+GitHub: https://github.com/joshisanidhya
